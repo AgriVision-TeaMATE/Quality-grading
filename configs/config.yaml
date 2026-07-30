@@ -20,9 +20,9 @@ classes:
     - "opa"
     - "op"
     - "bop"
-    - "bop1"
-    - "dust"
-    - "fiber"
+    # - "bop1"
+    # - "dust"
+    # - "fiber"
 
 split:
   train: 0.70

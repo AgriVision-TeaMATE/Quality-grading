@@ -70,10 +70,13 @@ def run_epoch(model, loader, criterion, optimizer, device, train=True):
 
 def evaluate_full(model, loader, criterion, device, label_encoder):
     loss, acc, f1, preds, labels = run_epoch(model, loader, criterion, None, device, train=False)
-    precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average="macro", zero_division=0)
-    report = classification_report(labels, preds, target_names=label_encoder.classes_,
+    class_ids = range(len(label_encoder.classes_))
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        labels, preds, labels=class_ids, average="macro", zero_division=0
+    )
+    report = classification_report(labels, preds, labels=class_ids, target_names=label_encoder.classes_,
                                     zero_division=0, output_dict=True)
-    cm = confusion_matrix(labels, preds)
+    cm = confusion_matrix(labels, preds, labels=class_ids)
     return {
         "loss": loss, "accuracy": acc, "macro_precision": precision,
         "macro_recall": recall, "macro_f1": f1,
