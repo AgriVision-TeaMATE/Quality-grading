@@ -1,0 +1,84 @@
+# =========================================================
+# Tea Grading Project - Central Configuration
+# Edit these values to match your dataset before running.
+# =========================================================
+
+paths:
+  raw_data: "dataset/ready"              # dataset/ready/<grade>/*.jpg  (tray photos to segment, one grade per folder)
+  segmented_data: "dataset/segmented"    # output of segment_particles.py, organized dataset/segmented/<grade>/*.png
+  mixed_samples: "dataset/mixed_samples" # full images of mixed samples, for the final proportion-estimation test
+  manifests: "dataset/manifests"         # train/val/test split CSVs
+  results_metrics: "results/metrics"
+  results_figures: "results/figures"
+  results_models: "results/models"
+  results_logs: "results/logs"
+
+classes:
+  # Finalized 6-class taxonomy (see docs/Plan_Final.md). Must match the folder
+  # names exactly (case-sensitive) as used in data/raw/<grade> and data/segmented/<grade>.
+  grades:
+    - "opa"
+    - "op"
+    - "bop"
+    - "bop1"
+    - "dust"
+    - "fiber"
+
+split:
+  train: 0.70
+  val: 0.15
+  test: 0.15
+  random_seed: 42
+  stratify: true
+
+segmentation:
+  min_particle_area: 50        # pixels^2, filters out noise/specks
+  max_particle_area: 50000     # pixels^2, filters out merged-blob artifacts
+  blur_kernel: 5                # gaussian blur kernel size (odd number)
+  threshold_method: "otsu"      # "otsu" or "adaptive"
+  morph_kernel: 3
+  padding: 4                    # pixels of padding around each cropped particle
+
+traditional_cv:
+  image_size: [128, 128]        # resize applied for texture/color feature extraction only
+                                  # (geometric features are measured on the ORIGINAL crop first,
+                                  # then converted to mm, so resizing them away doesn't lose size info)
+  px_per_mm: 20                  # calibrated from ruler shot at the "130%" capture zoom (see docs/Plan_Final.md).
+                                  # Update this (and re-extract features) if you change zoom/distance.
+                                  # 200%-zoom captures (fine grades) measured ~31 px/mm - use a separate
+                                  # value per grade folder if/when those are mixed in.
+  color_space: "lab"             # "lab" (plan default), "hsv", or "rgb" for color features
+  glcm_distances: [1, 3]
+  glcm_angles: [0, 0.785398, 1.5708, 2.35619]  # 0, 45, 90, 135 degrees
+  lbp_points: 24
+  lbp_radius: 8
+  models:
+    random_forest:
+      n_estimators: 300
+      max_depth: null
+    svm:
+      kernel: "rbf"
+      C: 10
+      gamma: "scale"
+    xgboost:
+      n_estimators: 300
+      max_depth: 6
+      learning_rate: 0.1
+
+deep_learning:
+  image_size: [224, 224]
+  batch_size: 32
+  num_epochs: 50
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  backbone: "resnet18"          # "simple_cnn", "resnet18", "efficientnet_b0", "mobilenet_v3_small"
+  pretrained: true
+  early_stopping_patience: 7
+  augmentation:
+    horizontal_flip: true
+    vertical_flip: true
+    rotation_degrees: 180
+    color_jitter: 0.1
+
+mixture_estimation:
+  weighting: "count"             # "count" or "area" — how proportions are computed from particle predictions
