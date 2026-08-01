@@ -78,7 +78,10 @@ def classify_with_traditional(crops, cfg, model_name):
         pred_label = label_encoder.inverse_transform([pred_idx])[0]
 
         predictions.append(pred_label)
-        areas.append(feats["area"])
+        # "area" was renamed to "area_mm2" (calibrated) / "area_px" (fallback)
+        # when geometric features were fixed to measure the original, un-resized
+        # crop - fall back through both keys so this keeps working either way.
+        areas.append(feats.get("area_mm2", feats.get("area_px", 0.0)))
 
     return predictions, areas
 
