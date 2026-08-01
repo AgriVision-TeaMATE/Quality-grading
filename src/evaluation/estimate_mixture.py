@@ -178,10 +178,34 @@ def main():
     parser.add_argument("--ground_truth", type=str, default=None,
                          help='JSON string of actual proportions, e.g. \'{"BOP":0.4,"OP":0.6}\'')
     parser.add_argument("--config", type=str, default=None)
+    parser.add_argument("--scale_level", type=int, default=None, choices=[1, 2],
+                         help="Which capture zoom this mixed sample was shot at: 1 = 130%% zoom "
+                              "(~20 px/mm, used for OPA/OP/BOP1/Fiber), 2 = 200%% zoom (~31 px/mm, "
+                              "used for BOP/Dust). Since a mixed sample's per-particle grade isn't "
+                              "known until after classification, this can't be looked up automatically "
+                              "the way it is for pure-grade training trays - pass this explicitly, or "
+                              "use --px_per_mm to set the value directly.")
+    parser.add_argument("--px_per_mm", type=float, default=None,
+                         help="Override the pixel-to-millimetre calibration directly, if you know it "
+                              "for this specific shot rather than one of the two standard scale levels.")
     args = parser.parse_args()
 
     cfg = load_config(args.config)
     grades = cfg["classes"]["grades"]
+
+    cfg_cv = cfg["traditional_cv"]
+    if args.px_per_mm is not None:
+        cfg_cv["px_per_mm"] = args.px_per_mm
+    elif args.scale_level is not None:
+        cfg_cv["px_per_mm"] = 20 if args.scale_level == 1 else 31
+    else:
+        default_ppm = cfg_cv.get("px_per_mm_default", cfg_cv.get("px_per_mm"))
+        cfg_cv["px_per_mm"] = default_ppm
+        print(f"[WARN] No --scale_level or --px_per_mm given - defaulting to {default_ppm} px/mm "
+              f"(scale level 1). If this mixed sample was actually shot at a different zoom, size "
+              f"features will be wrong and composition estimates for size-sensitive grade pairs "
+              f"(e.g. OPA vs OP) will be unreliable. Pass --scale_level 1|2 explicitly to be sure.")
+    print(f"Using px_per_mm = {cfg_cv['px_per_mm']} for this sample.")
 
     image = cv2.imread(args.image)
     if image is None:

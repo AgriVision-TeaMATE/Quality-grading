@@ -14,7 +14,7 @@ import argparse
 import pandas as pd
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "utils"))
-from common import load_config, resolve_path
+from common import load_config, resolve_path, get_px_per_mm
 from feature_extraction import extract_all_features
 
 
@@ -38,7 +38,11 @@ def main():
     rows = []
     failed = 0
     for _, row in chunk.iterrows():
-        feats = extract_all_features(row["filepath"], cfg_cv)
+        # Each grade may be captured at a different zoom level - look up the
+        # calibration that matches THIS particle's grade, not one global value.
+        cfg_cv_row = dict(cfg_cv)
+        cfg_cv_row["px_per_mm"] = get_px_per_mm(cfg, row["label"])
+        feats = extract_all_features(row["filepath"], cfg_cv_row)
         if feats is None:
             failed += 1
             continue

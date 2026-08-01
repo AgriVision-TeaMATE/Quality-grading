@@ -39,3 +39,22 @@ def set_global_seed(seed: int = 42):
 def ensure_dir(path: str):
     os.makedirs(path, exist_ok=True)
     return path
+
+
+def get_px_per_mm(cfg: dict, grade: str = None) -> float:
+    """
+    Resolve the correct pixel-to-millimetre calibration factor for a grade.
+
+    Different grades are captured at different camera zoom levels (see
+    configs/config.yaml -> traditional_cv.px_per_mm_by_grade), so a single
+    global px_per_mm silently corrupts size features for any grade shot at
+    a different zoom. This looks up the grade-specific value, falling back
+    to px_per_mm_default (or the legacy single px_per_mm key) if the grade
+    isn't listed or wasn't provided (e.g. for a mixed sample where the
+    per-particle grade isn't known yet).
+    """
+    cfg_cv = cfg["traditional_cv"]
+    by_grade = cfg_cv.get("px_per_mm_by_grade")
+    if by_grade and grade is not None and grade in by_grade:
+        return by_grade[grade]
+    return cfg_cv.get("px_per_mm_default", cfg_cv.get("px_per_mm"))

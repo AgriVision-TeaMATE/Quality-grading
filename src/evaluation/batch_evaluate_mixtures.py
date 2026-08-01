@@ -6,8 +6,13 @@ a known ground-truth composition, read from a manifest CSV), for BOTH the
 traditional-CV and CNN classifiers, and aggregates MAE/RMSE across samples.
 
 Expects a CSV at data/mixed_samples/ground_truth.csv with columns:
-    image_filename, <grade_1>, <grade_2>, ..., <grade_n>
+    image_filename, <grade_1>, <grade_2>, ..., <grade_n>, [scale_level], [px_per_mm]
 where grade columns hold the true proportion (0-1) of each grade in that sample.
+scale_level (1 or 2) or px_per_mm is optional per row - since a mixed photo's
+per-particle grade isn't known ahead of classification, the pixel-to-mm
+calibration can't be looked up automatically the way it is for pure-grade
+training trays, so specify which zoom each mixed sample was shot at. Defaults
+to scale level 1 (20 px/mm) with a warning if omitted.
 
 Usage:
     python batch_evaluate_mixtures.py
@@ -38,6 +43,8 @@ def run_batch(cfg, ground_truth_df, method, model_name_or_backbone):
 
     per_sample_results = []
 
+    cfg_cv = cfg["traditional_cv"]
+
     for _, row in ground_truth_df.iterrows():
         image_path = os.path.join(mixed_dir, row["image_filename"])
         image = cv2.imread(image_path)
@@ -46,6 +53,16 @@ def run_batch(cfg, ground_truth_df, method, model_name_or_backbone):
             continue
 
         ground_truth = {g: row[g] for g in grades if g in row}
+
+        # Resolve this row's calibration: explicit px_per_mm > scale_level > default.
+        if "px_per_mm" in row and pd.notna(row["px_per_mm"]):
+            cfg_cv["px_per_mm"] = float(row["px_per_mm"])
+        elif "scale_level" in row and pd.notna(row["scale_level"]):
+            cfg_cv["px_per_mm"] = 20 if int(row["scale_level"]) == 1 else 31
+        else:
+            cfg_cv["px_per_mm"] = cfg_cv.get("px_per_mm_default", cfg_cv.get("px_per_mm"))
+            print(f"  [WARN] {row['image_filename']}: no scale_level/px_per_mm given, "
+                  f"defaulting to {cfg_cv['px_per_mm']} px/mm (scale level 1).")
 
         crops, _, _ = segment_image(image, cfg["segmentation"])
         if not crops:

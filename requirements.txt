@@ -16,3 +16,8 @@ python-dotenv
 # see https://pytorch.org/get-started/locally/
 torch>=2.1.0
 torchvision>=0.16.0
+
+# API (src/api/main.py)
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9
