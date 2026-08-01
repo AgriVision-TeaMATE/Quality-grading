@@ -19,8 +19,8 @@ classes:
   grades:
     - "opa"
     - "op"
-    - "bop"
-    # - "bop1"
+    # - "bop"
+    - "bop1"
     # - "dust"
     # - "fiber"
 
