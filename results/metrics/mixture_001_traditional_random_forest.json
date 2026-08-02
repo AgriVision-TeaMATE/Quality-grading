@@ -1,0 +1,12 @@
+{
+  "image": ".\\dataset\\ready\\opa\\001.png",
+  "method": "traditional_random_forest",
+  "weighting": "count",
+  "num_particles_detected": 22,
+  "num_particles_classified": 22,
+  "predicted_proportions": {
+    "opa": 0.9090909090909088,
+    "op": 0.09090909090909091,
+    "bop1": 0.0
+  }
+}

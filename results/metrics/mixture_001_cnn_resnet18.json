@@ -1,0 +1,12 @@
+{
+  "image": ".\\dataset\\ready\\bop1\\001.jpg",
+  "method": "cnn_resnet18",
+  "weighting": "count",
+  "num_particles_detected": 56,
+  "num_particles_classified": 56,
+  "predicted_proportions": {
+    "opa": 0.0,
+    "op": 0.05357142857142857,
+    "bop1": 0.9464285714285724
+  }
+}
