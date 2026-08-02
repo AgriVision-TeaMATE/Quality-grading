@@ -225,7 +225,7 @@ def list_models():
 @app.post("/predict", response_model=PredictResponse)
 async def predict(
     file: UploadFile = File(..., description="Sample tray image (mixed or pure-grade)."),
-    method: str = Form("traditional", description="'traditional' or 'cnn'"),
+    method: str = Form("cnn", description="'traditional' or 'cnn'"),
     model_name: str = Form("random_forest", description="Used when method='traditional': random_forest | svm | xgboost"),
     backbone: str = Form("resnet18", description="Used when method='cnn': resnet18 | mobilenet_v3_small"),
     scale_level: Optional[int] = Form(None, description="1 (130% zoom, ~20 px/mm) or 2 (200% zoom, ~31 px/mm)"),
