@@ -3,6 +3,5 @@
 
 __pycache__
 
-dataset/ready/*
 dataset/segmented/*
 results
