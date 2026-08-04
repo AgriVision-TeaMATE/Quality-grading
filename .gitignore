@@ -5,3 +5,6 @@ __pycache__
 
 dataset/segmented/*
 
+*/manifests
+
+results
